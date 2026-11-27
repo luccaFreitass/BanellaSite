@@ -199,6 +199,9 @@
   if (finePointer && window.Lenis) {
     lenis = new Lenis({ duration: 1.15, smoothWheel: true });
     lenis.on('scroll', ScrollTrigger.update);
+    // quando o ScrollTrigger recalcula a página (pin, fontes, imagens), o Lenis precisa
+    // reler a altura e a posição real; sem isso a rolagem "volta" sozinha perto da galeria
+    ScrollTrigger.addEventListener('refresh', () => lenis.resize());
     gsap.ticker.add(t => lenis.raf(t * 1000));
     gsap.ticker.lagSmoothing(0);
   }
@@ -413,12 +416,16 @@
 
     /* GALERIA: horizontal com pin no desktop, swipe nativo no celular */
     mm.add('(min-width: 900px)', () => {
+      // a galeria só vira "trilho horizontal" quando a animação existe de fato;
+      // sem animação (reduzir movimento) ela fica em grade, com todas as fotos visíveis
+      document.documentElement.classList.add('gallery-pinned');
       const tr = $('[data-gallery]');
-      const dist = () => tr.scrollWidth - window.innerWidth;
-      gsap.to(tr, {
+      const dist = () => Math.max(0, tr.scrollWidth - window.innerWidth);
+      const tween = gsap.to(tr, {
         x: () => -dist(), ease: 'none',
-        scrollTrigger: { trigger: '.gallery__pin', start: 'top top', end: () => '+=' + dist(), pin: true, scrub: 1, invalidateOnRefresh: true, anticipatePin: 1 }
+        scrollTrigger: { trigger: '.gallery__pin', start: 'top top', end: () => '+=' + dist(), pin: true, scrub: true, invalidateOnRefresh: true }
       });
+      return () => { tween.scrollTrigger && tween.scrollTrigger.kill(); tween.kill(); gsap.set(tr, { clearProps: 'transform' }); document.documentElement.classList.remove('gallery-pinned'); };
     });
     mm.add('(max-width: 899px)', () => {
       gsap.from('.g', { x: 80, opacity: 0, stagger: .08, duration: 1, ease: 'expo.out', scrollTrigger: { trigger: '.gallery__track', start: 'top 85%' } });

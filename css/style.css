@@ -859,3 +859,17 @@ a.item:active .go { transform: scale(.9); }
 .dock__wa-round .ic-wa { width: 26px; height: 26px; }
 .dock__wa-round:active { transform: scale(.94); }
 @media (min-width: 900px) { .dock { display: none; } }
+
+/* =========================================================
+   GALERIA: grade por padrão; trilho horizontal só quando a animação está ativa
+   ========================================================= */
+@media (min-width: 900px) {
+  html:not(.gallery-pinned) .gallery__pin { height: auto; display: block; }
+  html:not(.gallery-pinned) .gallery__track {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; overflow: visible; padding-bottom: 40px;
+  }
+  html:not(.gallery-pinned) .g { width: auto; max-width: none; margin-top: 0 !important; }
+  html:not(.gallery-pinned) .g img, html:not(.gallery-pinned) .g--tall img { aspect-ratio: 4/5; }
+  /* com o trilho preso na tela, deixa espaço pro menu fixo não cobrir o título */
+  html.gallery-pinned .gallery__pin { padding-top: var(--nav-h); box-sizing: border-box; }
+}
